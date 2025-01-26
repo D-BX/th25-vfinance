@@ -11,8 +11,7 @@ class DisasterImpactPredictor:
             'Texas': ['tornado', 'flood'],
             'New York': ['blizzard', 'flood'],
             'Colorado': ['wildfire', 'blizzard']
-        }
-        
+        }    
         self.disaster_impacts = {
             'earthquake': {
                 'duration': 6, 
