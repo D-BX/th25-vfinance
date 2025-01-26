@@ -159,12 +159,33 @@ const DecisionTree = () => {
         }
     };
 
-    const handleFileUpload = (e) => {
+    const handleFileUpload = async (e) => {
         const file = e.target.files[0];
         if (file) {
             setPath([...path, 'Document Uploaded']);
             chat("I'll analyze your financial documents to provide personalized advice.");
             alert(`Final Decision Path: ${[...path, 'Document Uploaded'].join(" > ")}`);
+            
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('http://localhost:5001/uploadcsv', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('File uploaded successfully:', result);
+                } else {
+                    console.error('Error uploading file:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+
+            // announce insights are finsihed! Prompt buttom to go to insights page
             resetTree();
         }
     };

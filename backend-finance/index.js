@@ -99,6 +99,15 @@ app.post("/send-report", async (req, res) => {
   }
 });
 
+app.post('/uploadcsv', upload.single('file'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).send('No file uploaded.');
+    }
+
+    console.log('File uploaded:', req.file);
+    res.status(200).json({ message: 'File uploaded successfully', file: req.file });
+});
+
 app.post("/analyze-statement", upload.single('pdf'), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No PDF file' });
