@@ -1,16 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Canvas } from "@react-three/fiber";
 import { Experience } from "../components/Experience";
 import { UI } from "../components/UI";
 import { Leva } from "leva";
+import { useChat } from "../hooks/useChat";
+
 
 const backendUrl = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 
 const SpendingWrapped = () => {
+  const { chat } = useChat();
   const [file, setFile] = useState(null);
   const [analysisData, setAnalysisData] = useState(null);
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    if (analysisData && currentSlide === 0) {
+      chat(`I see you've spent $${analysisData.totalSpent} in total. Let me analyze this for you.`);
+    } else if (analysisData && currentSlide === 1) {
+      chat(`Your highest spending category is ${analysisData.topCategory} at $${analysisData.topCategoryAmount}. Would you like some tips on reducing expenses in this category?`);
+    } else if (analysisData && currentSlide === 2) {
+      chat(`I notice your biggest purchase was ${analysisData.biggestPurchase.merchant} for $${analysisData.biggestPurchase.amount}. Let's discuss if this aligns with your financial goals.`);
+    }
+  }, [analysisData, currentSlide]);
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
@@ -31,16 +44,17 @@ const SpendingWrapped = () => {
         }
         
         const data = await response.json();
-        console.log('Analysis data:', data); // Debug log
+        console.log('Analysis data:', data);
         
         if (!data.totalSpent || !data.topCategory || !data.biggestPurchase) {
           throw new Error('Invalid data format received');
         }
         
         setAnalysisData(data);
+        chat("I'm analyzing your statement now. Let me walk you through your spending patterns.");
       } catch (error) {
         console.error('Error analyzing statement:', error);
-        // Optional: Add user feedback here
+        chat("I encountered an error analyzing your statement. Could you try uploading it again?");
       }
     }
   };
