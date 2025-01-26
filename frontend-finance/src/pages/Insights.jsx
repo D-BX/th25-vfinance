@@ -8,17 +8,15 @@ import { UI } from "../components/UI";
 import { Leva } from "leva";
 import { useChat } from '../hooks/useChat';
 
-
 ChartJS.register(ArcElement, Tooltip, Legend, LineElement, CategoryScale, LinearScale, PointElement);
 
 const Insights = () => {
   const pieChartRef = useRef(null);
   const lineChartRef = useRef(null);
-  const [userQuery, setUserQuery] = useState('');
-  const [solution, setSolution] = useState('');
+  const [detailedInsights, setDetailedInsights] = useState('');
   const [loading, setLoading] = useState(false);
 
- const { chat } = useChat();
+  const { chat } = useChat();
 
   const pieData = {
     labels: ["Rent/Mortgage", "Utilities", "Groceries", "Entertainment", "Dining Out"],
@@ -40,39 +38,43 @@ const Insights = () => {
     }],
   };
 
-  const fetchSolutionFromOpenAI = async () => {
+  const fetchDetailedInsights = async () => {
     setLoading(true);
     try {
       const response = await axios.post(
         'https://api.openai.com/v1/completions',
         {
           model: 'text-davinci-003',
-          prompt: `Provide financial advice based on the following query: ${userQuery}`,
-          max_tokens: 150,
+          prompt: `Analyze the user's spending data and provide detailed insights:
+          - Breakdown of spending and where savings are possible.
+          - Recommendations for building an emergency fund for disasters.
+          - Be prompt and only talk once
+          - An explanation of how the ARIMA model analyzes spending and predicts disaster potential.`,
+          max_tokens: 300,
           temperature: 0.7,
         },
         {
           headers: {
             'Content-Type': 'application/json',
-            Authorization: ``, // Your OpenAI API key
+            Authorization: `Bearer YOUR_API_KEY`, // Replace with your OpenAI API key
           },
         }
       );
-      setSolution(response.data.choices[0].text.trim());
+      setDetailedInsights(response.data.choices[0].text.trim());
     } catch (error) {
-      console.error('Error fetching solution from OpenAI:', error);
-      setSolution('Unable to fetch a solution at this time. Please try again later.');
+      console.error('Error fetching detailed insights:', error);
+      setDetailedInsights('Unable to fetch insights at this time. Please try again later.');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    // You can craft any initial message here that references your data.
+    // Send an initial chat message once on mount
     chat(`Welcome back! Here's a quick summary of your spending insights for this month.
-          Your total monthly expenses are around $4,200. Rent is your largest category at $1,074, 
-          followed by Entertainment at $1,200. Let me know how I can help!`);
-  }, [chat]); // runs only once at component mount
+      Your total monthly expenses are around $4,200. Rent is your largest category at $1,074, 
+      followed by Entertainment at $1,200. Let me know how I can help!`);
+  }, [chat]);
 
   useEffect(() => {
     return () => {
@@ -87,83 +89,60 @@ const Insights = () => {
         <div className="flex gap-8 items-start">
           <div className="w-2/3">
             <div className="bg-gradient-to-br from-blue-600/20 to-white/10 backdrop-blur-sm rounded-2xl p-6 shadow-xl">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Left Section: Data Table */}
-                <div className="bg-white/10 rounded-xl p-4">
-                  <h3 className="text-xl font-bold text-white mb-4">Expense Breakdown</h3>
-                  <table className="w-full text-white">
-                    <thead>
-                      <tr>
-                        <th className="p-2 text-left border-b border-white/20">Category</th>
-                        <th className="p-2 text-right border-b border-white/20">Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td className="p-2 border-b border-white/10">Rent/Mortgage</td>
-                        <td className="p-2 text-right border-b border-white/10">$1074</td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 border-b border-white/10">Utilities</td>
-                        <td className="p-2 text-right border-b border-white/10">$227</td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 border-b border-white/10">Groceries</td>
-                        <td className="p-2 text-right border-b border-white/10">$496</td>
-                      </tr>
-                      <tr>
-                        <td className="p-2 border-b border-white/10">Entertainment</td>
-                        <td className="p-2 text-right border-b border-white/10">$1200</td>
-                      </tr>
-                       <tr>
-                        <td className="p-2 border-b border-white/10">Dining Out</td>
-                        <td className="p-2 text-right border-b border-white/10">$901</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+              {/* Insights Section */}
+        <div className="mt-8 bg-white/10 rounded-xl p-6 backdrop-blur-sm border border-white/10">
+          <h3 className="text-2xl font-bold text-white mb-6">Your Financial Insights</h3>
+          <h3 className="text-xl font-bold text-white mb-4">Expense Breakdown</h3>
+          <div className="overflow-hidden rounded-lg border border-white/10">
+            <table className="w-full text-white">
+              <thead>
+                <tr className="bg-white/5">
+                  <th className="p-4 text-left border-b border-white/20 font-medium">Category</th>
+                  <th className="p-4 text-right border-b border-white/20 font-medium">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="hover:bg-white/5 transition-colors">
+                  <td className="p-4 border-b border-white/10">Rent/Mortgage</td>
+                  <td className="p-4 text-right border-b border-white/10">$1,074</td>
+                </tr>
+                <tr className="hover:bg-white/5 transition-colors">
+                  <td className="p-4 border-b border-white/10">Food</td>
+                  <td className="p-4 text-right border-b border-white/10">$901</td>
+                </tr>
+                <tr className="hover:bg-white/5 transition-colors">
+                  <td className="p-4 border-b border-white/10">Utilities</td>
+                  <td className="p-4 text-right border-b border-white/10">$227</td>
+                </tr>
+                <tr className="hover:bg-white/5 transition-colors">
+                  <td className="p-4 border-b border-white/10">Entertainment</td>
+                  <td className="p-4 text-right border-b border-white/10">$1200</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-                {/* Right Section: Charts */}
-                <div className="space-y-6">
-                  <div className="bg-white/10 rounded-xl p-4">
-                    <h3 className="text-xl font-bold text-white mb-4">Spending Distribution</h3>
-                    <Pie data={pieData} ref={pieChartRef} />
-                  </div>
-                  <div className="bg-white/10 rounded-xl p-4">
-                    <h3 className="text-xl font-bold text-white mb-4">Monthly Spending Trend</h3>
-                    <Line data={lineData} ref={lineChartRef} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom Section: Solution Box */}
-              <div className="mt-6 bg-white/10 rounded-xl p-4">
-                <h3 className="text-xl font-bold text-white mb-4">Get Insights on Your Financial Problem</h3>
-                <div className="flex gap-4">
-                  <input
-                    type="text"
-                    value={userQuery}
-                    onChange={(e) => setUserQuery(e.target.value)}
-                    placeholder="Ask about saving money, budgeting, etc."
-                    className="flex-1 bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white placeholder:text-white/50"
-                  />
-                  <button
-                    onClick={fetchSolutionFromOpenAI}
-                    disabled={loading}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors disabled:opacity-50"
-                  >
-                    {loading ? 'Loading...' : 'Submit'}
-                  </button>
-                </div>
-                {solution && (
-                  <div className="mt-4 p-4 bg-white/5 rounded-lg">
-                    <p className="text-white"><strong>Solution:</strong> {solution}</p>
-                  </div>
-                )}
-              </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+          {/* Pie Chart */}
+          <div className="bg-white/10 rounded-xl p-6 backdrop-blur-sm border border-white/10">
+            <h3 className="text-xl font-bold text-white mb-6">Spending Distribution</h3>
+            <div className="p-4">
+              <Pie data={pieData} ref={pieChartRef} />
             </div>
           </div>
-          
+
+          {/* Line Chart */}
+          <div className="bg-white/10 rounded-xl p-6 backdrop-blur-sm border border-white/10">
+            <h3 className="text-xl font-bold text-white mb-6">Monthly Spending Trend</h3>
+            <div className="p-4">
+              <Line data={lineData} ref={lineChartRef} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+          {/* 3D Visualization */}
           <div className="w-1/3 sticky top-8">
             <div className="h-[600px] relative rounded-2xl overflow-hidden bg-gradient-to-br from-blue-600 to-white/50">
               <Canvas shadows camera={{ position: [0, 0, 1], fov: 30 }}>

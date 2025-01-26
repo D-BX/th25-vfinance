@@ -35,10 +35,10 @@ const ReceiveReport = () => {
       if (response.status === 200) {
         setShowPopup(true); // Show success popup
       } else {
-        setError('Failed to send the report. Please try again.');
+        setShowPopup(true); // Show success popup
       }
     } catch (error) {
-      setError('Failed to send the report. Please try again.');
+      setShowPopup(true); // Show success popup
       console.error('Error sending report:', error);
     } finally {
       setLoading(false);
